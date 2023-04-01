@@ -3,61 +3,74 @@ from modules import script_callbacks
 from modules import ui
 from modules import shared
 import threading
-import time, os
+import time
+import os
 
-github_link = "https://github.com/kabachuha/discord-rpc-for-automatic1111-webui"
+github_link = "https://github.com/davehornik/sd-discordRPC"
 
-enable_dynamic_status = False
+enable_dynamic_status = True
+
 
 def start_rpc():
-    print('Launching the Discord RPC extension. By https://github.com/kabachuha, version 0.1b')
-    print(f'Use this link to report any problems or add suggestions {github_link}')
-    from launch import is_installed, run_pip
-    if not is_installed("discord-rpc"):
-        print("Installing the missing 'discord-rpc' package and its dependencies,")
-        print("In case it will give a package error after the installation, restart the webui.")
-        run_pip("install discord-rpc", "discord-rpc")
+    print('Running Discord Rich Presence Extension by https://github.com/davehornik, version 1.0.0')
+    print(f'Bug reporting -> {github_link}')
+
+    # Check if the required packages are installed, and install them if necessary
+    try:
+        import pypresence
+    except ImportError:
+        print("Installing the missing 'pypresence' package and its dependencies")
+        os.system("pip install pypresence")
+        import pypresence
+
     if enable_dynamic_status:
         print("Remember that it uses multithreading, so there may occur cases when the whole program freezes")
         print("In such cases close the webui, go to the 'extensions' folder and remove the plugin")
-    
+
     checkpoint_info = shared.sd_model.sd_checkpoint_info
     model_name = os.path.basename(checkpoint_info.filename)
-    
-    import DiscordRPC
-    import time
-    
-    rpc = DiscordRPC.RPC.Set_ID(app_id=1065987911486550076)
-    rpc.set_activity(
-              state="Waiting for the start" if enable_dynamic_status else "*dynamic status is wip*",
-              details=model_name,
-              large_image="unknown" if enable_dynamic_status else "auto",
-              timestamp=rpc.timestamp()
-            )
-    
+
+    client_id = "1091507869200957450"
+
+    rpc = pypresence.Presence(client_id)
+    rpc.connect()
+
+    rpc.update(
+        state="Waiting for the start" if enable_dynamic_status else "Dynamic Status - *WIP*",
+        details=model_name,
+        large_image="unknown" if enable_dynamic_status else "auto",
+        start=time.time()
+    )
+
     def RPC_thread(rpc):
-        print('Starting the RPC thread')
-        rpc.run()
+        print('RPC thread on bg starting')
+        while True:
+            rpc.update()
+
+    def state_watcher_thread():
+        while True:
+            checkpoint_info = shared.sd_model.sd_checkpoint_info
+            model_name = os.path.basename(checkpoint_info.filename)
+            if shared.state.job_count == 0:
+                rpc.update(large_image="a1111", details=model_name,
+                           state="Idle", start=time.time())
+            else:
+                rpc.update(large_image="a1111_gen", details=model_name,
+                           state=f'generating {shared.state.job_count} pix', start=time.time())
+            time.sleep(2)  # update once per two seconds
+
     rpc_watcher = threading.Thread(target=RPC_thread, args=(rpc,), daemon=True)
+    state_watcher = threading.Thread(target=state_watcher_thread, daemon=True)
+    state_watcher.start()
     rpc_watcher.start()
+
     if enable_dynamic_status:
-        state_watcher = threading.Thread(target=check_progress_loop, args=(rpc,RPC_thread,), daemon=True)
-        state_watcher.start()
-    print("If everything is fine, the RPC should be running by now. Proceed to your Discord settings and add the app (it's name is huge) to the game list.")
-    
+        print("If everyhing is okey, it should be working already. Make sure u got Game Activity enabled in Discord.")
+
+
 def on_ui_tabs():
     start_rpc()
     return []
 
-script_callbacks.on_ui_tabs(on_ui_tabs)
 
-# Dynamic status check #FIXME deadlock happens
-def check_progress_loop(rpc,RPC_thread):
-    while True:
-        checkpoint_info = shared.sd_model.sd_checkpoint_info
-        model_name = os.path.basename(checkpoint_info.filename)
-        if shared.state.job_count == 0:
-            rpc.set_activity(large_image="auto", details=model_name, state="Idle", timestamp=rpc.timestamp())
-        else:
-            rpc.set_activity(large_image="generating", details=model_name, state=f'generating {shared.state.job_count} pics', timestamp=rpc.timestamp())
-        time.sleep(1) # update once per second
+script_callbacks.on_ui_tabs(on_ui_tabs)
