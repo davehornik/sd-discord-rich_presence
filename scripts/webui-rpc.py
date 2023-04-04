@@ -6,7 +6,6 @@ import threading
 import time
 import os
 
-
 github_link = "https://github.com/davehornik/sd-discord-rich_presence"
 
 enable_dynamic_status = True
