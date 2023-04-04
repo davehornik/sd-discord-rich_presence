@@ -5,7 +5,7 @@ from modules import shared
 import threading
 import time
 import os
-from modules.processing import StableDiffusionProcessing
+
 
 github_link = "https://github.com/davehornik/sd-discord-rich_presence"
 
@@ -41,6 +41,7 @@ def start_rpc():
         large_image="unknown" if enable_dynamic_status else "auto",
         start=time_c
     )
+
     state_watcher = threading.Thread(target=state_watcher_thread, args=(rpc,), daemon=True)
     state_watcher.start()
 
@@ -56,6 +57,9 @@ def state_watcher_thread(rpc):
 
         checkpoint_info = shared.sd_model.sd_checkpoint_info
         model_name = os.path.basename(checkpoint_info.filename)
+        model_name = model_name.split('.')
+        model_name = model_name[0]
+
         if shared.state.job_count == 0:
 
             if reset_time == False:
@@ -71,7 +75,6 @@ def state_watcher_thread(rpc):
                        state="Idle",
                        start=time_c)
         else:
-
             if reset_time == True:
                 time_c = time.time()
                 reset_time = False
@@ -80,7 +83,7 @@ def state_watcher_thread(rpc):
                 batch_size = get_batch_size()
                 if batch_size != 0:
                     batch_size_r = True
-                
+
             rpc.update(large_image="a1111_gen",
                        details=model_name,
                        state=f'Total batch of {shared.state.job_count * batch_size} image/s',
