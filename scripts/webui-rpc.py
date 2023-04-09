@@ -4,6 +4,7 @@ import threading
 import time
 import os
 
+lock = threading.Lock()
 github_link = "https://github.com/davehornik/sd-discord-rich_presence"
 
 enable_dynamic_status = True
@@ -49,6 +50,7 @@ def start_rpc():
 
 
 def state_watcher_thread(rpc, time_c):
+    lock.acquire()
     reset_time = False
     batch_size_r = False
     batch_size = 0
@@ -143,13 +145,14 @@ def state_watcher_thread(rpc, time_c):
         time.sleep(2)  # update once per two seconds
 
 
+
 def on_ui_tabs():
     start_rpc()
     return []
 
 
 def get_batch_size():
-    if shared.state.current_latent != None:
+    if shared.state.current_latent is not None:
         x = shared.state.current_latent.size()
         x = x[0]
         return x
