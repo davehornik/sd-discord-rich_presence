@@ -11,6 +11,11 @@ enable_dynamic_status = True
 
 
 def start_rpc():
+    state_watcher = threading.Thread(target=state_watcher_thread, args=(rpc, time_c), daemon=True)
+    state_watcher.start()
+
+
+def state_watcher_thread(rpc, time_c):
     print('[Discord Rich Presence]  Running Discord Rich Presence Extension, version 1.1.0')
     print(f'[Discord Rich Presence]  Bug reporting -> {github_link}')
 
@@ -41,15 +46,10 @@ def start_rpc():
         start=int(time_c)
     )
 
-    state_watcher = threading.Thread(target=state_watcher_thread, args=(rpc, time_c), daemon=True)
-    state_watcher.start()
-
     if enable_dynamic_status:
         print("[Discord Rich Presence]  Make sure that Game Activity is enabled in Discord.")
         print("[Discord Rich Presence]  Should be running already if there's no error.")
 
-
-def state_watcher_thread(rpc, time_c):
     lock.acquire()
     reset_time = False
     batch_size_r = False
@@ -143,7 +143,6 @@ def state_watcher_thread(rpc, time_c):
                        start=time_c)
 
         time.sleep(2)  # update once per two seconds
-
 
 
 def on_ui_tabs():
