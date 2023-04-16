@@ -1,14 +1,25 @@
-![Logo](https://i.imgur.com/ryNp4cw.png)
-###
+Discord Rich Presence
+=======
+Dynamic Discord rich presence for [AUTOMATIC1111's WebUI](https://github.com/davehornik/stable-diffusion-webui).
+-----------
+![Logo](preview.png)
 
-<h1 align="center">Discord Rich Presence [AUTOMATIC1111's Stable Diffusion WebUI]</h1>
+## Features
+- Current model you are using
+- Dynamically changes your status
+    - Idle
+    - Generating XX image/s'
+        - Showing progress in percentage
+        - Time elapsed
+- Also changes status image based on activity
 
-###
+## Future plans
+- [ ] Add options page for following:
+    - [ ] ON/OFF for Dynamic status
+    - [ ] ON/OFF for Percentage progress
+    - [ ] Custom buttons (maybe, we'll see)
+- Send us your ideas!
 
-<p align="center">Soo... What's this about?</p>
-
-###
-
-<p align="center">Hey!<br>Let me tell you about this awesome extension we've been working on.<br>Designed for AUTOMATIC1111's Stable Diffusion WebUI.<br>It connects your status to Discord's rich presence.<br><br>What does that mean, you ask?<br><br>Well, it basically shows your Discord friends<br>what you're up to with Stable Diffusion.<br><br>One of the coolest features of this extension is that it can<br>automatically detect what Stable Diffusion model you're using.<br>And if you're not generating any images, it sets your status to "Idle".<br><br>But the real magic happens when you start generating images.<br>The extension will broadcast the total number of images being generated,<br>so your friends can see just how productive you're being.</p>
-
-###
+## Contributors
+- Idea & graphics and "PR" by [davehornik](https://github.com/davehornik/)
+- Coding mainly done by [Edesak](https://github.com/Edesak)
