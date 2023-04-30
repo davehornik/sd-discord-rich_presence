@@ -1,6 +1,6 @@
 Discord Rich Presence
 =======
-Dynamic Discord rich presence for [AUTOMATIC1111's WebUI](https://github.com/davehornik/stable-diffusion-webui).
+Dynamic Discord rich presence (only) for [AUTOMATIC1111's WebUI](https://github.com/davehornik/stable-diffusion-webui).
 -----------
 ![Logo](preview.png)
 
