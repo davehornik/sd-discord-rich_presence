@@ -10,7 +10,7 @@ enable_dynamic_status = True
 
 
 def start_rpc():
-    print('[Discord Rich Presence]  Running Discord Rich Presence Extension, version 1.1.0')
+    print('[Discord Rich Presence]  Running Discord Rich Presence Extension, version 1.2.0')
     print(f'[Discord Rich Presence]  Bug reporting -> {github_link}')
 
     # Check if the required packages are installed, and install them if necessary
