@@ -4,6 +4,7 @@ import threading
 import time
 import os
 
+lock = threading.Lock()
 github_link = "https://github.com/davehornik/sd-discord-rich_presence"
 
 enable_dynamic_status = True
@@ -40,15 +41,11 @@ def start_rpc():
         start=int(time_c)
     )
 
-    state_watcher = threading.Thread(target=state_watcher_thread, args=(rpc, time_c), daemon=True)
-    state_watcher.start()
-
     if enable_dynamic_status:
         print("[Discord Rich Presence]  Make sure that Game Activity is enabled in Discord.")
         print("[Discord Rich Presence]  Should be running already if there's no error.")
 
-
-def state_watcher_thread(rpc, time_c):
+    lock.acquire()
     reset_time = False
     batch_size_r = False
     batch_size = 0
@@ -149,7 +146,7 @@ def on_ui_tabs():
 
 
 def get_batch_size():
-    if shared.state.current_latent != None:
+    if shared.state.current_latent is not None:
         x = shared.state.current_latent.size()
         x = x[0]
         return x
