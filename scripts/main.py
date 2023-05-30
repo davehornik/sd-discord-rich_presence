@@ -3,29 +3,18 @@ from modules import shared
 import threading
 import time
 import os
+import pypresence
 
 github_link = "https://github.com/davehornik/sd-discord-rich_presence"
 
 enable_dynamic_status = True
-
-
+        
 def start_rpc():
-    print('[Discord Rich Presence]  Running Discord Rich Presence Extension, version 1.2.0')
+    print('[Discord Rich Presence]  Running Discord Rich Presence Extension, version 1.3.0')
     print(f'[Discord Rich Presence]  Bug reporting -> {github_link}')
-
-    # Check if the required packages are installed, and install them if necessary
-    from launch import is_installed, run_pip
-    if not is_installed("pypresence"):
-        print("[Discord Rich Presence]  Installing missing 'pypresence' module and its dependencies,")
-        print("[Discord Rich Presence]  In case of module error after the installation -> restart WebUI.")
-        run_pip("install pypresence", "pypresence")
-    else:
-        print("[Discord Rich Presence]  'pypresence' module is installed - skipping.")
 
     checkpoint_info = shared.sd_model.sd_checkpoint_info
     model_name = os.path.basename(checkpoint_info.filename)
-
-    import pypresence
 
     client_id = "1091507869200957450"
 
@@ -49,6 +38,8 @@ def start_rpc():
 
 
 def state_watcher_thread(rpc, time_c):
+    global reloadedUI
+    reloadedUI = False
     reset_time = False
     batch_size_r = False
     batch_size = 0
@@ -81,7 +72,7 @@ def state_watcher_thread(rpc, time_c):
         100: "small_gen_100"
     }
 
-    while True:
+    while reloadedUI is not True:
 
         checkpoint_info = shared.sd_model.sd_checkpoint_info
         model_name = os.path.basename(checkpoint_info.filename)
@@ -139,7 +130,7 @@ def state_watcher_thread(rpc, time_c):
                        details=model_name,
                        state=f'Generating {shared.state.job_count * batch_size} image/s',
                        start=time_c)
-
+        # print(reloadedUI)
         time.sleep(2)  # update once per two seconds
 
 
@@ -158,3 +149,10 @@ def get_batch_size():
 
 
 script_callbacks.on_ui_tabs(on_ui_tabs)
+
+# in dev
+# def reloadprint():
+#     global reloadedUI
+#     reloadedUI = True
+#     print (reloadedUI)
+# script_callbacks.on_before_reload(reloadprint)
