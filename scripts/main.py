@@ -6,38 +6,40 @@ import os
 import pypresence
 
 github_link = "https://github.com/davehornik/sd-discord-rich_presence"
+ver = "1.3.1"
 
 enable_dynamic_status = True
         
-def start_rpc():
-    print('[Discord Rich Presence]  Running Discord Rich Presence Extension, version 1.3.0')
+def discord_broadcast():
+    #Do not change these Credits and it's values on the top.
+    print(f'[Discord Rich Presence]  Discord Rich Presence Extension, version {ver}')
     print(f'[Discord Rich Presence]  Bug reporting -> {github_link}')
 
     checkpoint_info = shared.sd_model.sd_checkpoint_info
     model_name = os.path.basename(checkpoint_info.filename)
 
+    #Do not change - will not workie.
     client_id = "1091507869200957450"
 
-    rpc = pypresence.Presence(client_id)
-    rpc.connect()
+    broadcast = pypresence.Presence(client_id)
+    broadcast.connect()
 
-    time_c = time.time()
-    rpc.update(
+    timestamp = time.time()
+    broadcast.update(
         state="Waiting for the start" if enable_dynamic_status else "Dynamic Status - OFF",
         details=model_name,
         large_image="unknown" if enable_dynamic_status else "auto",
-        start=int(time_c)
+        start=int(timestamp)
     )
 
-    state_watcher = threading.Thread(target=state_watcher_thread, args=(rpc, time_c), daemon=True)
+    state_watcher = threading.Thread(target=state_watcher_thread, args=(broadcast, timestamp), daemon=True)
     state_watcher.start()
 
     if enable_dynamic_status:
         print("[Discord Rich Presence]  Make sure that Game Activity is enabled in Discord.")
-        print("[Discord Rich Presence]  Should be running already if there's no error.")
+        print("[Discord Rich Presence]  Should be broadcasting already if there's no error.")
 
-
-def state_watcher_thread(rpc, time_c):
+def state_watcher_thread(broadcast, timestamp):
     global reloadedUI
     reloadedUI = False
     reset_time = False
@@ -47,7 +49,6 @@ def state_watcher_thread(rpc, time_c):
     total_progress = 0
     image_to_show = "small_gen_00"
     percent_show = 0
-
     dict_images = {
         0: "small_gen_00",
         5: "small_gen_05",
@@ -72,6 +73,7 @@ def state_watcher_thread(rpc, time_c):
         100: "small_gen_100"
     }
 
+    #Will solve this unused while and 'reloadedUI' in future patches.
     while reloadedUI is not True:
 
         checkpoint_info = shared.sd_model.sd_checkpoint_info
@@ -82,20 +84,20 @@ def state_watcher_thread(rpc, time_c):
         if shared.state.job_count == 0:
 
             if reset_time == False:
-                time_c = int(time.time())
+                timestamp = int(time.time())
                 reset_time = True
 
             if batch_size_r == True:
                 batch_size_r = False
                 batch_size = 0
 
-            rpc.update(large_image="a1111",
+            broadcast.update(large_image="a1111",
                        details=model_name,
                        state="Idle",
-                       start=time_c)
+                       start=timestamp)
         else:
             if reset_time == True:
-                time_c = int(time.time())
+                timestamp = int(time.time())
                 reset_time = False
 
             if batch_size_r == False:
@@ -108,11 +110,11 @@ def state_watcher_thread(rpc, time_c):
                     total_progress = shared.state.sampling_steps * shared.state.job_count
                     status = False
 
-                # This is really nasty line of code please don't look or i will cry :'( Edesak
+                # This is really nasty line of code.. Please, don't look or I'll cry.
+                # Had to be done since there's no global for progress%   ~Edesak
                 progress = shared.total_tqdm._tqdm.n
 
                 percent_progress = progress / total_progress * 100
-
 
             else:
                 percent_progress = 0
@@ -123,21 +125,18 @@ def state_watcher_thread(rpc, time_c):
                     percent_show = image
                     break
 
-            rpc.update(large_image="a1111_gen",
+            broadcast.update(large_image="a1111_gen",
                        small_image=image_to_show,
                        large_text="Generating",
                        small_text=f"{percent_show}%",
                        details=model_name,
                        state=f'Generating {shared.state.job_count * batch_size} image/s',
-                       start=time_c)
-        # print(reloadedUI)
+                       start=timestamp)
         time.sleep(2)  # update once per two seconds
 
-
 def on_ui_tabs():
-    start_rpc()
+    discord_broadcast()
     return []
-
 
 def get_batch_size():
     if shared.state.current_latent != None:
@@ -146,13 +145,5 @@ def get_batch_size():
         return x
     else:
         return 0
-
-
+    
 script_callbacks.on_ui_tabs(on_ui_tabs)
-
-# in dev
-# def reloadprint():
-#     global reloadedUI
-#     reloadedUI = True
-#     print (reloadedUI)
-# script_callbacks.on_before_reload(reloadprint)
