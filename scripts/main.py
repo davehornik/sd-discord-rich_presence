@@ -3,7 +3,11 @@ from modules import shared
 import threading
 import time
 import os
+import asyncio
+from asyncio import WindowsProactorEventLoopPolicy
 import pypresence
+
+asyncio.set_event_loop_policy(WindowsProactorEventLoopPolicy())
 
 github_link = "https://github.com/davehornik/sd-discord-rich_presence"
 ver = "1.3.1"
